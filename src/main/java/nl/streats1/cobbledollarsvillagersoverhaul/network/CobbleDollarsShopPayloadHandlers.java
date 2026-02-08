@@ -80,12 +80,15 @@ public final class CobbleDollarsShopPayloadHandlers {
 
             ServerLevel level = serverPlayer.serverLevel();
             Entity entity = level.getEntity(data.villagerId());
+            List<MerchantOffer> allOffers = null;
             if (entity instanceof Villager villager) {
-                buildOfferLists(villager.getOffers(), buyOffers, sellOffers);
+                allOffers = villager.getOffers();
+                buildOfferLists(allOffers, buyOffers, sellOffers);
             } else if (entity instanceof WanderingTrader trader) {
-                buildOfferLists(trader.getOffers(), buyOffers, sellOffers);
+                allOffers = trader.getOffers();
+                buildOfferLists(allOffers, buyOffers, sellOffers);
             }
-            if (buyOffers.isEmpty()) {
+            if (buyOffers.isEmpty() && (allOffers == null || allOffers.isEmpty())) {
                 List<CobbleDollarsShopPayloads.ShopOfferEntry> configBuy = CobbleDollarsConfigHelper.getDefaultShopBuyOffers();
                 if (!configBuy.isEmpty()) {
                     buyOffers.addAll(configBuy);

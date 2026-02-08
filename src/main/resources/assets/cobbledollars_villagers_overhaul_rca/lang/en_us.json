@@ -3,5 +3,6 @@
   "gui.cobbledollars_villagers_overhaul_rca.shop": "Shop",
   "gui.cobbledollars_villagers_overhaul_rca.buy": "Buy",
   "gui.cobbledollars_villagers_overhaul_rca.sell": "Sell",
-  "gui.cobbledollars_villagers_overhaul_rca.no_trades": "No trades available"
+  "gui.cobbledollars_villagers_overhaul_rca.no_trades": "No Trades",
+  "gui.cobbledollars_villagers_overhaul_rca.no_trades_line2": "Available"
 }

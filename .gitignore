@@ -2,6 +2,7 @@
 /build/
 /run/
 /.idea/
+/.ai/
 /.vscode/
 *.iml
 /libs/*.jar

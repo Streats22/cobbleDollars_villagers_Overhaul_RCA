@@ -8,6 +8,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -75,8 +77,14 @@ public class CobbleDollarsShopScreen extends Screen {
     private static final int BUY_BUTTON_STRIP_W = 52;
     private static final int BUY_BUTTON_STRIP_H = 20;
     private static final int LIST_LEFT_OFFSET = 185;
+    private static final int CLOSE_BUTTON_SIZE = 14;
+    private static final int CLOSE_BUTTON_MARGIN = 6;
+    private static final int RIGHT_PANEL_HEADER_Y = 16;
     private static final float LIST_ICON_SCALE = 0.9f;
     private static final float LIST_TEXT_SCALE = 0.9f;
+    private static final float LIST_COSTB_SCALE = 0.7f;
+    private static final float LIST_COSTB_PRICE_SCALE = 0.75f;
+    private static final float LIST_COSTB_PLUS_SCALE = 0.75f;
     private static final int LIST_ITEM_ICON_SIZE = Math.round(16 * LIST_ICON_SCALE);
     private static final int BALANCE_BG_X = 72;
     private static final int BALANCE_BG_Y = 181;
@@ -232,12 +240,9 @@ public class CobbleDollarsShopScreen extends Screen {
         actionButton = new TextureOnlyButton(left + LEFT_PANEL_BUY_X, top + LEFT_PANEL_BUY_Y, LEFT_PANEL_BUY_W, LEFT_PANEL_BUY_H, Component.translatable("gui.cobbledollars_villagers_overhaul_rca.buy"), this::onAction);
         addRenderableWidget(actionButton);
 
-        int closeSize = 14;
-        int closeX = left + WINDOW_WIDTH - closeSize - 6;
-        int closeY = top + 4;
-        addRenderableWidget(Button.builder(Component.literal("×"), b -> onClose())
-                .bounds(closeX, closeY, closeSize, closeSize)
-                .build());
+        int closeX = left + WINDOW_WIDTH - CLOSE_BUTTON_SIZE - CLOSE_BUTTON_MARGIN;
+        int closeY = top + 2;
+        addRenderableWidget(new InvisibleButton(closeX, closeY, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE, Component.literal("×"), b -> onClose()));
     }
 
     private void adjustQuantity(int delta) {
@@ -251,11 +256,15 @@ public class CobbleDollarsShopScreen extends Screen {
         var offers = currentOffers();
         if (selectedIndex < 0 || selectedIndex >= offers.size()) return;
         int qty = parseQuantity();
-        long price = priceForDisplay(offers.get(selectedIndex));
+        CobbleDollarsShopPayloads.ShopOfferEntry entry = offers.get(selectedIndex);
+        long price = priceForDisplay(entry);
         if (isSellTab()) {
+            if (!hasRequiredSellItems(entry, qty)) return;
             PacketDistributor.sendToServer(new CobbleDollarsShopPayloads.SellForCobbleDollars(villagerId, selectedIndex, qty));
             applyBalanceDelta(price * qty, 100);
         } else {
+            long total = (long) qty * price;
+            if (balance < total) return;
             PacketDistributor.sendToServer(new CobbleDollarsShopPayloads.BuyWithCobbleDollars(villagerId, selectedIndex, qty, buyOffersFromConfig));
             applyBalanceDelta(-price * qty, 100);
         }
@@ -352,6 +361,12 @@ public class CobbleDollarsShopScreen extends Screen {
         guiGraphics.drawString(font, Component.translatable("gui.cobbledollars_villagers_overhaul_rca.buy"), tabX + 4, buyY + (CATEGORY_ENTRY_H - font.lineHeight) / 2, selectedTab == 0 ? 0xFFE0E0E0 : 0xFFA0A0A0, false);
         guiGraphics.drawString(font, Component.translatable("gui.cobbledollars_villagers_overhaul_rca.sell"), tabX + 4, sellY + (CATEGORY_ENTRY_H - font.lineHeight) / 2, selectedTab == 1 ? 0xFFE0E0E0 : 0xFFA0A0A0, false);
 
+        Component professionLabel = getProfessionLabel();
+        if (!professionLabel.getString().isEmpty()) {
+            int headerLeft = left + 8;
+            guiGraphics.drawString(font, professionLabel, headerLeft, top + RIGHT_PANEL_HEADER_Y, 0xFFE0E0E0, false);
+        }
+
         int listTop = top + LIST_TOP_OFFSET;
         int rowL = left + LIST_LEFT_OFFSET - 10;
         int rowR = rowL + LIST_WIDTH;
@@ -390,27 +405,31 @@ public class CobbleDollarsShopScreen extends Screen {
             int badgeX = priceX + LIST_PRICE_BADGE_OFFSET_X;
             int badgeY = priceY + LIST_PRICE_BADGE_OFFSET_Y - (TEX_COBBLEDOLLARS_LOGO_H - font.lineHeight) / 2;
             blitFull(guiGraphics, TEX_COBBLEDOLLARS_LOGO, badgeX, badgeY, TEX_COBBLEDOLLARS_LOGO_W, TEX_COBBLEDOLLARS_LOGO_H);
+            boolean hasCostB = !isSellTab() && entry.hasCostB();
+            float priceScale = hasCostB ? LIST_COSTB_PRICE_SCALE : LIST_TEXT_SCALE;
             guiGraphics.pose().pushPose();
-            guiGraphics.pose().scale(LIST_TEXT_SCALE, LIST_TEXT_SCALE, 1.0f);
-            int priceDrawX = Math.round(priceX / LIST_TEXT_SCALE);
-            int priceDrawY = Math.round(priceY / LIST_TEXT_SCALE);
+            guiGraphics.pose().scale(priceScale, priceScale, 1.0f);
+            int priceDrawX = Math.round(priceX / priceScale);
+            int priceDrawY = Math.round(priceY / priceScale);
             int priceColor = isSellTab() ? 0xFF00DD00 : 0xFFFFFFFF;
             guiGraphics.drawString(font, priceStr, priceDrawX, priceDrawY, priceColor, false);
             guiGraphics.pose().popPose();
             if (!isSellTab()) {
                 ItemStack costB = costBStackFrom(entry);
                 if (!costB.isEmpty()) {
-                    int costBX = priceX + Math.round(font.width(priceStr) * LIST_TEXT_SCALE) + OFFER_ROW_GAP_AFTER_ICON;
+                    int costBX = priceX + Math.round(font.width(priceStr) * LIST_TEXT_SCALE);
+                    int costBY = iconY + 3;
                     guiGraphics.pose().pushPose();
-                    guiGraphics.pose().scale(LIST_TEXT_SCALE, LIST_TEXT_SCALE, 1.0f);
-                    int plusDrawX = Math.round((costBX - 2) / LIST_TEXT_SCALE);
-                    int plusDrawY = Math.round((textY + PRICE_TEXT_OFFSET_Y) / LIST_TEXT_SCALE);
+                    float plusScale = hasCostB ? LIST_COSTB_PLUS_SCALE : LIST_TEXT_SCALE;
+                    guiGraphics.pose().scale(plusScale, plusScale, 1.0f);
+                    int plusDrawX = Math.round((costBX - 2) / plusScale);
+                    int plusDrawY = Math.round((textY + PRICE_TEXT_OFFSET_Y) / plusScale);
                     guiGraphics.drawString(font, "+", plusDrawX, plusDrawY, 0xFFAAAAAA, false);
                     guiGraphics.pose().popPose();
                     guiGraphics.pose().pushPose();
-                    guiGraphics.pose().scale(LIST_ICON_SCALE, LIST_ICON_SCALE, 1.0f);
-                    int costDrawX = Math.round((costBX + 2) / LIST_ICON_SCALE);
-                    int costDrawY = Math.round(iconY / LIST_ICON_SCALE);
+                    guiGraphics.pose().scale(LIST_COSTB_SCALE, LIST_COSTB_SCALE, 1.0f);
+                    int costDrawX = Math.round((costBX + 2) / LIST_COSTB_SCALE);
+                    int costDrawY = Math.round(costBY / LIST_COSTB_SCALE);
                     guiGraphics.renderItem(costB, costDrawX, costDrawY);
                     guiGraphics.renderItemDecorations(font, costB, costDrawX, costDrawY);
                     guiGraphics.pose().popPose();
@@ -418,10 +437,20 @@ public class CobbleDollarsShopScreen extends Screen {
             }
         }
 
+        // Close icon
+        int closeX = left + WINDOW_WIDTH - CLOSE_BUTTON_SIZE - CLOSE_BUTTON_MARGIN;
+        int closeY = top + 2;
+        guiGraphics.drawString(font, Component.literal("×"), closeX + 4, closeY + 3, 0xFFE0E0E0, false);
+
         if (offers.isEmpty()) {
             Component emptyMsg = Component.translatable("gui.cobbledollars_villagers_overhaul_rca.no_trades");
+            Component emptyMsg2 = Component.translatable("gui.cobbledollars_villagers_overhaul_rca.no_trades_line2");
             int msgW = font.width(emptyMsg);
-            guiGraphics.drawString(font, emptyMsg, rowL + (LIST_WIDTH + 4 - msgW) / 2, listTop + listVisibleRows * listItemHeight / 2 - font.lineHeight / 2, 0xFF888888, false);
+            int msgW2 = font.width(emptyMsg2);
+            int centerX = rowL + (LIST_WIDTH + 4) / 2;
+            int baseY = listTop + listVisibleRows * listItemHeight / 2 - font.lineHeight;
+            guiGraphics.drawString(font, emptyMsg, centerX - msgW / 2, baseY, 0xFF888888, false);
+            guiGraphics.drawString(font, emptyMsg2, centerX - msgW2 / 2, baseY + font.lineHeight, 0xFF888888, false);
         }
 
         int listHeight = listVisibleRows * listItemHeight;
@@ -436,20 +465,27 @@ public class CobbleDollarsShopScreen extends Screen {
 
         boolean hasSelection = selectedIndex >= 0 && selectedIndex < offers.size();
         boolean canAfford = hasSelection;
+        boolean canSell = hasSelection;
         if (hasSelection && !isSellTab()) {
             CobbleDollarsShopPayloads.ShopOfferEntry entry = offers.get(selectedIndex);
             long price = priceForDisplay(entry);
             long total = (long) parseQuantity() * price;
             canAfford = balance >= total;
+        } else if (hasSelection) {
+            CobbleDollarsShopPayloads.ShopOfferEntry entry = offers.get(selectedIndex);
+            canSell = hasRequiredSellItems(entry, parseQuantity());
         }
         if (actionButton != null) {
             actionButton.setMessage(Component.translatable(isSellTab() ? "gui.cobbledollars_villagers_overhaul_rca.sell" : "gui.cobbledollars_villagers_overhaul_rca.buy"));
-            actionButton.active = hasSelection && (isSellTab() || canAfford);
+            actionButton.active = hasSelection && (isSellTab() ? canSell : canAfford);
             int btnX = left + LEFT_PANEL_BUY_X;
             int btnY = top + LEFT_PANEL_BUY_Y;
             int stateIndex = !actionButton.active ? 2 : (actionButton.isHoveredOrFocused() ? 1 : 0);
             int srcY = stateIndex * (TEX_BUY_BUTTON_H / 3);
             blitRegion(guiGraphics, TEX_BUY_BUTTON, btnX, btnY, 0, srcY, LEFT_PANEL_BUY_W, LEFT_PANEL_BUY_H, TEX_BUY_BUTTON_W, TEX_BUY_BUTTON_H);
+            if (!actionButton.active) {
+                guiGraphics.fill(btnX, btnY, btnX + LEFT_PANEL_BUY_W, btnY + LEFT_PANEL_BUY_H, 0x55000000);
+            }
         }
         if (amountPlusButton != null && amountMinusButton != null) {
             int upX = amountPlusButton.getX();
@@ -531,6 +567,41 @@ public class CobbleDollarsShopScreen extends Screen {
         var item = BuiltInRegistries.ITEM.get(entry.costBItemId());
         if (item == null || item == Items.AIR) return ItemStack.EMPTY;
         return new ItemStack(item, Math.max(1, entry.costBCount()));
+    }
+
+    private Component getProfessionLabel() {
+        if (minecraft == null || minecraft.level == null) return Component.empty();
+        var entity = minecraft.level.getEntity(villagerId);
+        if (entity instanceof Villager villager) {
+            var key = BuiltInRegistries.VILLAGER_PROFESSION.getKey(villager.getVillagerData().getProfession());
+            if (key != null) {
+                return Component.translatable("entity.minecraft.villager." + key.getPath());
+            }
+            return Component.literal(villager.getVillagerData().getProfession().toString());
+        }
+        if (entity instanceof WanderingTrader) {
+            return Component.translatable("entity.minecraft.wandering_trader");
+        }
+        return Component.empty();
+    }
+
+    private boolean hasRequiredSellItems(CobbleDollarsShopPayloads.ShopOfferEntry entry, int qty) {
+        if (minecraft == null || minecraft.player == null) return false;
+        var item = BuiltInRegistries.ITEM.get(entry.resultItemId());
+        if (item == null || item == Items.AIR) return false;
+        int required = Math.max(1, entry.resultCount()) * Math.max(1, qty);
+        int have = 0;
+        ItemStack needle = new ItemStack(item);
+        var inv = minecraft.player.getInventory();
+        for (int slot = 0; slot < inv.getContainerSize(); slot++) {
+            ItemStack stack = inv.getItem(slot);
+            if (stack.isEmpty()) continue;
+            if (ItemStack.isSameItemSameComponents(stack, needle)) {
+                have += stack.getCount();
+                if (have >= required) return true;
+            }
+        }
+        return false;
     }
 
     private int getRate() {
