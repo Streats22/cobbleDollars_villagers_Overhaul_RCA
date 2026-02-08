@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: curse.maven:kotlin-for-forge-351264:5978393" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="curse.maven" artifactId="kotlin-for-forge-351264" version="5978393" baseVersion="5978393" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/curse.maven/kotlin-for-forge-351264/5978393/f276d27f2930a44e7224080b5ccdcae4029b4d9a/kotlin-for-forge-351264-5978393.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

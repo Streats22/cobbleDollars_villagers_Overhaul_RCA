@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: com.cobblemon:neoforge:1.7.2+1.21.1" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="com.cobblemon" artifactId="neoforge" version="1.7.2+1.21.1" baseVersion="1.7.2+1.21.1" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.cobblemon/neoforge/1.7.2+1.21.1/5367737cf1469ee01ec0bd22c50d775b6051dd02/neoforge-1.7.2+1.21.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.cobblemon/neoforge/1.7.2+1.21.1/719c4fe9c93c5abba0db16cceb03ebd8a8cf311b/neoforge-1.7.2+1.21.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

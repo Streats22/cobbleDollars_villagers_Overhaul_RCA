@@ -1,0 +1,39 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="MIT"
+
+[[mods]]
+modId="cobbledollars_villagers_overhaul_rca"
+version="0.0.1"
+displayName="CobbleDollars Villagers Overhaul [RCA]"
+description='''
+Standalone CobbleDollars villager shop and currency integration.
+'''
+
+[[dependencies.cobbledollars_villagers_overhaul_rca]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1.215,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.cobbledollars_villagers_overhaul_rca]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21.1]"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.cobbledollars_villagers_overhaul_rca]]
+    modId="cobblemon"
+    type="required"
+    reason="Cobblemon integration for villager shop and interactions"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.cobbledollars_villagers_overhaul_rca]]
+    modId="cobbledollars"
+    type="required"
+    reason="CobbleDollars currency integration for villager shop"
+    ordering="AFTER"
+    side="BOTH"
