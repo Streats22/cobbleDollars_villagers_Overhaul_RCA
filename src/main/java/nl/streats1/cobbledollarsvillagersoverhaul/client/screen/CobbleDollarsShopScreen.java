@@ -26,26 +26,14 @@ import java.util.List;
 @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
 public class CobbleDollarsShopScreen extends Screen {
 
-    private static final int GUI_Y_OFFSET = 0;
     private static final int WINDOW_WIDTH = 252;
-    private static final int RIGHT_PANEL_X = 172;
     private static final int LIST_TOP_OFFSET = 16;
     private static final int LIST_VISIBLE_ROWS = 9;
     private static final int LIST_ROW_HEIGHT = 18;
-    private static final int TRADE_PANEL_HEIGHT = 120;
-    private static final int SLOT_SIZE = 18;
-    private static final int INVENTORY_ROWS = 4;
     private static final int INVENTORY_COLS = 9;
-    private static final int INVENTORY_VISIBLE_ROWS = 4;
-    private static final int INVENTORY_SLOTS = INVENTORY_ROWS * INVENTORY_COLS;
-    private static final int INVENTORY_SLOT_SPACING = 18;
-    private static final int INVENTORY_AREA_HEIGHT = INVENTORY_VISIBLE_ROWS * INVENTORY_SLOT_SPACING + 14;
     private static final int WINDOW_HEIGHT = 196;
-    private static final int TAB_HEIGHT = 22;
     private static final int SCROLLBAR_WIDTH = 8;
     private static final int LIST_WIDTH = 79;
-    private static final int LEFT_STRIP_WIDTH = 66;
-    private static final int TAB_OFFSET_X = 10;
     private static final int TAB_OUTLINE_OFFSET_X = -2;
     private static final int TAB_OUTLINE_OFFSET_Y = -4;
     private static final int CATEGORY_LIST_X = 98;
@@ -72,10 +60,6 @@ public class CobbleDollarsShopScreen extends Screen {
     private static final int LEFT_PANEL_QTY_BTN_DOWN_X = LEFT_PANEL_QTY_BTN_UP_X + LEFT_PANEL_BTN_SIZE + LEFT_PANEL_QTY_BTN_GAP;
     private static final int LEFT_PANEL_QTY_BTN_Y = 63;
     private static final int LEFT_PANEL_BUY_X = 58;
-    private static final int TAB_H = 13;
-    private static final int BUY_BUTTON_STRIP_Y = 34;
-    private static final int BUY_BUTTON_STRIP_W = 52;
-    private static final int BUY_BUTTON_STRIP_H = 20;
     private static final int LIST_LEFT_OFFSET = 185;
     private static final int CLOSE_BUTTON_SIZE = 14;
     private static final int CLOSE_BUTTON_MARGIN = 6;
@@ -95,21 +79,15 @@ public class CobbleDollarsShopScreen extends Screen {
     private static final int INVENTORY_HOTBAR_TOP = 154;
 
     private static final int OFFER_ROW_PADDING_LEFT = 1;
-    private static final int OFFER_ROW_PADDING_RIGHT = 2;
     private static final int OFFER_ROW_GAP_AFTER_ICON = 4;
     private static final int LIST_ICON_OFFSET_X = -1;
     private static final int LIST_ICON_OFFSET_Y = -1;
     private static final int LIST_PRICE_BADGE_OFFSET_X = -3;
     private static final int LIST_PRICE_BADGE_OFFSET_Y = -3;
-    private static final int SLOT_ITEM_INSET = (SLOT_SIZE - LIST_ITEM_ICON_SIZE) / 2;
     private static final int PRICE_TEXT_OFFSET_Y = 4;
 
     // GUI textures under this mod's namespace.
     private static final String GUI_TEXTURES_NAMESPACE = "cobbledollars_villagers_overhaul_rca";
-
-    private static final ResourceLocation TEX_BANK_BASE = rl(GUI_TEXTURES_NAMESPACE, "textures/gui/bank/bank_base.png");
-    private static final int TEX_BANK_BASE_W = 170;
-    private static final int TEX_BANK_BASE_H = 204;
 
     private static final ResourceLocation TEX_SHOP_BASE = rl(GUI_TEXTURES_NAMESPACE, "textures/gui/shop/shop_base.png");
     private static final ResourceLocation TEX_CATEGORY_BG = rl(GUI_TEXTURES_NAMESPACE, "textures/gui/shop/category_background.png");
