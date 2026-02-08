@@ -264,7 +264,7 @@ public class CobbleDollarsShopScreen extends Screen {
             applyBalanceDelta(price * qty, 100);
         } else {
             long total = (long) qty * price;
-            if (balance < total) return;
+            if (balance < total || !hasRequiredBuyItems(entry, qty)) return;
             PacketDistributor.sendToServer(new CobbleDollarsShopPayloads.BuyWithCobbleDollars(villagerId, selectedIndex, qty, buyOffersFromConfig));
             applyBalanceDelta(-price * qty, 100);
         }
@@ -470,7 +470,7 @@ public class CobbleDollarsShopScreen extends Screen {
             CobbleDollarsShopPayloads.ShopOfferEntry entry = offers.get(selectedIndex);
             long price = priceForDisplay(entry);
             long total = (long) parseQuantity() * price;
-            canAfford = balance >= total;
+            canAfford = balance >= total && hasRequiredBuyItems(entry, parseQuantity());
         } else if (hasSelection) {
             CobbleDollarsShopPayloads.ShopOfferEntry entry = offers.get(selectedIndex);
             canSell = hasRequiredSellItems(entry, parseQuantity());
@@ -590,6 +590,26 @@ public class CobbleDollarsShopScreen extends Screen {
         var item = BuiltInRegistries.ITEM.get(entry.resultItemId());
         if (item == null || item == Items.AIR) return false;
         int required = Math.max(1, entry.resultCount()) * Math.max(1, qty);
+        int have = 0;
+        ItemStack needle = new ItemStack(item);
+        var inv = minecraft.player.getInventory();
+        for (int slot = 0; slot < inv.getContainerSize(); slot++) {
+            ItemStack stack = inv.getItem(slot);
+            if (stack.isEmpty()) continue;
+            if (ItemStack.isSameItemSameComponents(stack, needle)) {
+                have += stack.getCount();
+                if (have >= required) return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasRequiredBuyItems(CobbleDollarsShopPayloads.ShopOfferEntry entry, int qty) {
+        if (entry == null || !entry.hasCostB()) return true;
+        if (minecraft == null || minecraft.player == null) return false;
+        var item = BuiltInRegistries.ITEM.get(entry.costBItemId());
+        if (item == null || item == Items.AIR) return false;
+        int required = Math.max(1, entry.costBCount()) * Math.max(1, qty);
         int have = 0;
         ItemStack needle = new ItemStack(item);
         var inv = minecraft.player.getInventory();
