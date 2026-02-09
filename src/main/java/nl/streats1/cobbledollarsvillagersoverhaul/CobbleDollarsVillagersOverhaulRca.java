@@ -1,6 +1,8 @@
 package nl.streats1.cobbledollarsvillagersoverhaul;
 
 import com.mojang.logging.LogUtils;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
@@ -53,6 +55,7 @@ public class CobbleDollarsVillagersOverhaulRca {
     private void handleVillagerShopInteract(net.minecraft.world.entity.Entity target, boolean isClientSide,
             Runnable cancelAction, java.util.function.IntSupplier getId) {
         if (!Config.USE_COBBLEDOLLARS_SHOP_UI.get() || !CobbleDollarsIntegration.isModLoaded()) return;
+        if (isRadicalTrainerAssociation(target)) return;
         if (target instanceof Villager villager) {
             VillagerProfession prof = villager.getVillagerData().getProfession();
             if (prof == VillagerProfession.NONE || prof == VillagerProfession.NITWIT) return;
@@ -64,5 +67,14 @@ public class CobbleDollarsVillagersOverhaulRca {
         if (isClientSide) {
             PacketDistributor.sendToServer(new CobbleDollarsShopPayloads.RequestShopData(getId.getAsInt()));
         }
+    }
+
+    /**
+     * RCT Trainer Association NPC uses wandering trader-like AI but its own trade UI.
+     * Do not replace it with the CobbleDollars shop screen.
+     */
+    private static boolean isRadicalTrainerAssociation(net.minecraft.world.entity.Entity entity) {
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        return id != null && "rctmod".equals(id.getNamespace()) && "trainer_association".equals(id.getPath());
     }
 }

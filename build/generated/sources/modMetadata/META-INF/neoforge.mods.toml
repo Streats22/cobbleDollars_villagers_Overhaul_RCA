@@ -4,8 +4,9 @@ license="MIT"
 
 [[mods]]
 modId="cobbledollars_villagers_overhaul_rca"
-version="0.0.1"
+version="0.1"
 displayName="CobbleDollars Villagers Overhaul [RCA]"
+logoFile="icon.png"
 description='''
 Standalone CobbleDollars villager shop and currency integration.
 '''
