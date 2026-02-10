@@ -2,6 +2,8 @@
 
 Standalone NeoForge mod that replaces the vanilla villager trade GUI with a CobbleDollars-style shop, adds Buy/Sell tabs with a balance display, and lets villagers accept CobbleDollars instead of emeralds.
 
+RCA stands for RUBIUS COBBLEMON ADDONS
+
 ## Requirements
 - Minecraft 1.21.1 (NeoForge 21.1.215)
 - Cobblemon 1.7.2+ (NeoForge)
